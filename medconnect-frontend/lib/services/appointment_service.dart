@@ -6,7 +6,9 @@ import 'api_service.dart';
 class AppointmentService {
   Future<List<Appointment>> getAppointments(String token) async {
     try {
-      final url = Uri.parse('${ApiService.apiPrefix}/appointments/');
+      final url = Uri.parse(
+        '${ApiService.apiPrefix}/appointments/?page_size=100',
+      );
       final response = await http.get(
         url,
         headers: {

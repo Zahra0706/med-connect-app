@@ -7,7 +7,7 @@ class Appointment {
 
   final int id;
   final int doctorId;
-  final int patientId; 
+  final int patientId;
   final String doctorName;
   final String patientName;
   final String specialty;
@@ -50,7 +50,8 @@ class Appointment {
       case 'CANCELLED':
         displayStatus = statusCancelled;
         break;
-      case 'REJECTED': // Handle rejected
+      case 'REFUSED': // Correct backend status
+      case 'REJECTED': // Legacy/Safety
         displayStatus = statusRefused;
         break;
       case 'COMPLETED':

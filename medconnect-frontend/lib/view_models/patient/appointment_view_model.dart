@@ -19,8 +19,7 @@ class AppointmentViewModel with ChangeNotifier {
     final list = _appointments
         .where(
           (a) =>
-              a.rawStatus != 'CANCELLED' &&
-              a.rawStatus != 'REJECTED' &&
+              (a.rawStatus == 'PENDING' || a.rawStatus == 'CONFIRMED') &&
               a.dateTime.isAfter(now),
         )
         .toList();
@@ -35,9 +34,7 @@ class AppointmentViewModel with ChangeNotifier {
         .where(
           (a) =>
               a.rawStatus == 'COMPLETED' ||
-              (a.rawStatus != 'CANCELLED' &&
-                  a.rawStatus !=
-                      'REJECTED' && // Also exclude rejected from past active logic
+              ((a.rawStatus == 'PENDING' || a.rawStatus == 'CONFIRMED') &&
                   a.dateTime.isBefore(now)),
         )
         .toList();
@@ -48,7 +45,12 @@ class AppointmentViewModel with ChangeNotifier {
 
   List<Appointment> get cancelledAppointments {
     final list = _appointments
-        .where((a) => a.rawStatus == 'CANCELLED' || a.rawStatus == 'REJECTED')
+        .where(
+          (a) =>
+              a.rawStatus == 'CANCELLED' ||
+              a.rawStatus == 'REJECTED' ||
+              a.rawStatus == 'REFUSED',
+        )
         .toList();
     // Tri par date d'annulation (si disponible) ou date de RDV
     list.sort((a, b) {
