@@ -144,22 +144,8 @@ class _AppointmentListScreenState extends State<AppointmentListScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                _buildStatusBadge(appt.status),
-                if (appt.status == 'PENDING' || appt.status == 'CONFIRMED')
-                  InkWell(
-                    onTap: () => _confirmCancellation(context, appt.id),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: const Text(
-                        "Annuler",
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
+                _buildStatusBadge(appt.rawStatus), // Use rawStatus for logic
+                _buildCancelButton(context, appt),
               ],
             ),
           ),
@@ -168,16 +154,68 @@ class _AppointmentListScreenState extends State<AppointmentListScreen>
     );
   }
 
+  Widget _buildCancelButton(BuildContext context, Appointment appt) {
+    final now = DateTime.now();
+    // Check if cancellation is allowed (> 24h before)
+    final bool isFarEnough = appt.dateTime.difference(now).inHours > 24;
+    // Only show for active appointments
+    if (appt.rawStatus != 'PENDING' && appt.rawStatus != 'CONFIRMED') {
+      return const SizedBox.shrink();
+    }
+
+    return InkWell(
+      onTap: () {
+        if (!isFarEnough) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                "Impossible d'annuler : le rendez-vous est dans moins de 24h.",
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+        _confirmCancellation(context, appt.id);
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(top: 4.0),
+        child: Text(
+          "Annuler",
+          style: TextStyle(
+            color: isFarEnough ? Colors.red : Colors.grey,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _confirmCancellation(
     BuildContext context,
     int appointmentId,
   ) async {
+    final reasonController = TextEditingController();
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Annuler le rendez-vous ?"),
-        content: const Text(
-          "Êtes-vous sûr de vouloir annuler ce rendez-vous ?",
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Êtes-vous sûr de vouloir annuler ce rendez-vous ?\n(Possible uniquement si + de 24h avant)",
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: reasonController,
+              decoration: const InputDecoration(
+                labelText: "Raison (optionnel)",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -204,7 +242,14 @@ class _AppointmentListScreenState extends State<AppointmentListScreen>
 
       final token = authViewModel.authResponse?.token;
       if (token != null) {
-        final success = await viewModel.cancelAppointment(token, appointmentId);
+        final success = await viewModel.cancelAppointment(
+          token,
+          appointmentId,
+          reason: reasonController.text.isNotEmpty
+              ? reasonController.text
+              : null,
+        );
+
         if (!success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(viewModel.error ?? "Erreur d'annulation")),
@@ -218,10 +263,10 @@ class _AppointmentListScreenState extends State<AppointmentListScreen>
     }
   }
 
-  Widget _buildStatusBadge(String status) {
+  Widget _buildStatusBadge(String rawStatus) {
     Color color;
     String text;
-    switch (status) {
+    switch (rawStatus) {
       case 'PENDING':
         color = Colors.orange;
         text = 'En attente';
@@ -234,13 +279,17 @@ class _AppointmentListScreenState extends State<AppointmentListScreen>
         color = Colors.red;
         text = 'Annulé';
         break;
+      case 'REJECTED':
+        color = Colors.red;
+        text = 'Refusé';
+        break;
       case 'COMPLETED':
         color = Colors.blue;
         text = 'Terminé';
         break;
       default:
         color = Colors.grey;
-        text = status;
+        text = rawStatus;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

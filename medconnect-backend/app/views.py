@@ -447,11 +447,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             return Response({"error": f"RDV pas annulable, statut = {appointment.status}"},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        # 24h Rule for patients
-        if user.is_patient():
-             if appointment.date < timezone.now() + timedelta(hours=24):
-                 return Response({"error": "Impossible d'annuler moins de 24h avant le rendez-vous."}, 
-                                 status=status.HTTP_400_BAD_REQUEST)
+
 
         reason = request.data.get("reason", "")
 

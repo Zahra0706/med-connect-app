@@ -7,18 +7,19 @@ class Appointment {
 
   final int id;
   final int doctorId;
-  final int patientId; // Added for matching history
+  final int patientId; 
   final String doctorName;
   final String patientName;
   final String specialty;
   final String date;
   final int duration;
   final String status;
+  final String rawStatus;
   final String? reason;
   final String? notesPatient;
 
   // Computed properties
-  DateTime get dateTime => DateTime.parse(date);
+  DateTime get dateTime => DateTime.parse(date).toLocal();
 
   Appointment({
     required this.id,
@@ -30,6 +31,7 @@ class Appointment {
     required this.date,
     required this.duration,
     required this.status,
+    required this.rawStatus,
     this.reason,
     this.notesPatient,
   });
@@ -37,7 +39,7 @@ class Appointment {
   factory Appointment.fromJson(Map<String, dynamic> json) {
     String apiStatus = json['status'] ?? 'PENDING';
     String displayStatus = statusPending;
-    
+
     switch (apiStatus) {
       case 'PENDING':
         displayStatus = statusPending;
@@ -48,11 +50,14 @@ class Appointment {
       case 'CANCELLED':
         displayStatus = statusCancelled;
         break;
+      case 'REJECTED': // Handle rejected
+        displayStatus = statusRefused;
+        break;
       case 'COMPLETED':
         displayStatus = statusCompleted;
         break;
       default:
-        displayStatus = apiStatus; // Fallback for 'En attente' etc if already translated
+        displayStatus = apiStatus;
     }
 
     return Appointment(
@@ -65,14 +70,13 @@ class Appointment {
       date: json['date'],
       duration: json['duration'] ?? 30,
       status: displayStatus,
+      rawStatus: apiStatus,
       reason: json['reason'],
       notesPatient: json['notes_patient'],
     );
   }
 
-  Appointment copyWith({
-    String? status,
-  }) {
+  Appointment copyWith({String? status, String? rawStatus}) {
     return Appointment(
       id: id,
       doctorId: doctorId,
@@ -83,6 +87,7 @@ class Appointment {
       date: date,
       duration: duration,
       status: status ?? this.status,
+      rawStatus: rawStatus ?? this.rawStatus,
       reason: reason,
       notesPatient: notesPatient,
     );

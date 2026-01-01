@@ -90,7 +90,7 @@ class AppointmentService {
       },
       body: json.encode({
         'doctor': doctorId,
-        'date': date.toIso8601String(),
+        'date': date.toUtc().toIso8601String(),
         'reason': reason,
       }),
     );
