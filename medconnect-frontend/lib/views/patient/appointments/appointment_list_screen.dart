@@ -87,9 +87,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen>
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => const BookAppointmentScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const BookAppointmentScreen()),
           );
         },
         backgroundColor: const Color(0xFF567991),
@@ -142,11 +140,82 @@ class _AppointmentListScreenState extends State<AppointmentListScreen>
                 ),
               ],
             ),
-            trailing: _buildStatusBadge(appt.status),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _buildStatusBadge(appt.status),
+                if (appt.status == 'PENDING' || appt.status == 'CONFIRMED')
+                  InkWell(
+                    onTap: () => _confirmCancellation(context, appt.id),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: const Text(
+                        "Annuler",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },
     );
+  }
+
+  Future<void> _confirmCancellation(
+    BuildContext context,
+    int appointmentId,
+  ) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Annuler le rendez-vous ?"),
+        content: const Text(
+          "Êtes-vous sûr de vouloir annuler ce rendez-vous ?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Non"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Oui", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final viewModel = Provider.of<AppointmentViewModel>(
+        context,
+        listen: false,
+      );
+      final authViewModel = Provider.of<PatientAuthViewModel>(
+        context,
+        listen: false,
+      );
+
+      final token = authViewModel.authResponse?.token;
+      if (token != null) {
+        final success = await viewModel.cancelAppointment(token, appointmentId);
+        if (!success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(viewModel.error ?? "Erreur d'annulation")),
+          );
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Rendez-vous annulé")));
+        }
+      }
+    }
   }
 
   Widget _buildStatusBadge(String status) {

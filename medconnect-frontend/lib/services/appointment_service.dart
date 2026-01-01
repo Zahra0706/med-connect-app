@@ -17,17 +17,20 @@ class AppointmentService {
 
       if (response.statusCode == 200) {
         final dynamic body = json.decode(response.body);
-        
+
         if (body is List) {
           return body.map((e) => Appointment.fromJson(e)).toList();
-        } else if (body is Map<String, dynamic> && body.containsKey('results')) {
+        } else if (body is Map<String, dynamic> &&
+            body.containsKey('results')) {
           final List<dynamic> results = body['results'];
           return results.map((e) => Appointment.fromJson(e)).toList();
         } else {
-           throw Exception('Format de réponse invalide');
+          throw Exception('Format de réponse invalide');
         }
       } else {
-        throw Exception('Erreur de chargement des rendez-vous: ${response.statusCode}');
+        throw Exception(
+          'Erreur de chargement des rendez-vous: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Erreur de chargement des rendez-vous: $e');
@@ -51,17 +54,20 @@ class AppointmentService {
 
       if (response.statusCode == 200) {
         final dynamic body = json.decode(utf8.decode(response.bodyBytes));
-        
+
         if (body is List) {
           return body.map((e) => Appointment.fromJson(e)).toList();
-        } else if (body is Map<String, dynamic> && body.containsKey('results')) {
+        } else if (body is Map<String, dynamic> &&
+            body.containsKey('results')) {
           final List<dynamic> results = body['results'];
           return results.map((e) => Appointment.fromJson(e)).toList();
         } else {
-           throw Exception('Format de réponse invalide');
+          throw Exception('Format de réponse invalide');
         }
       } else {
-        throw Exception('Erreur de chargement des rendez-vous doc: ${response.statusCode}');
+        throw Exception(
+          'Erreur de chargement des rendez-vous doc: ${response.statusCode}',
+        );
       }
     } catch (e) {
       print('Error detail: $e');
@@ -99,6 +105,7 @@ class AppointmentService {
       );
     }
   }
+
   Future<Appointment> confirmAppointment(String token, int id) async {
     final url = Uri.parse('${ApiService.apiPrefix}/appointments/$id/confirm/');
     print('Calling PATCH $url');
@@ -117,7 +124,9 @@ class AppointmentService {
     if (response.headers['content-type']?.contains('text/html') == true ||
         response.body.trim().startsWith('<!DOCTYPE') ||
         response.body.trim().startsWith('<html')) {
-      throw Exception('Erreur Backend: Réponse HTML reçue au lieu de JSON. URL: $url');
+      throw Exception(
+        'Erreur Backend: Réponse HTML reçue au lieu de JSON. URL: $url',
+      );
     }
 
     if (response.statusCode == 200) {
@@ -129,12 +138,17 @@ class AppointmentService {
       } catch (_) {
         error = response.body;
       }
-      throw Exception(error is Map ? (error['error'] ?? 'Erreur inconnue') : error.toString());
+      throw Exception(
+        error is Map ? (error['error'] ?? 'Erreur inconnue') : error.toString(),
+      );
     }
   }
 
-
-  Future<Appointment> refuseAppointment(String token, int id, String reason) async {
+  Future<Appointment> refuseAppointment(
+    String token,
+    int id,
+    String reason,
+  ) async {
     final url = Uri.parse('${ApiService.apiPrefix}/appointments/$id/refuse/');
     print('Calling PATCH $url');
 
@@ -153,7 +167,9 @@ class AppointmentService {
     if (response.headers['content-type']?.contains('text/html') == true ||
         response.body.trim().startsWith('<!DOCTYPE') ||
         response.body.trim().startsWith('<html')) {
-      throw Exception('Erreur Backend: Réponse HTML reçue au lieu de JSON. URL: $url');
+      throw Exception(
+        'Erreur Backend: Réponse HTML reçue au lieu de JSON. URL: $url',
+      );
     }
 
     if (response.statusCode == 200) {
@@ -165,12 +181,17 @@ class AppointmentService {
       } catch (_) {
         error = response.body;
       }
-      throw Exception(error is Map ? (error['error'] ?? 'Erreur inconnue') : error.toString());
+      throw Exception(
+        error is Map ? (error['error'] ?? 'Erreur inconnue') : error.toString(),
+      );
     }
   }
 
-
-  Future<Appointment> cancelAppointment(String token, int id, String? reason) async {
+  Future<Appointment> cancelAppointment(
+    String token,
+    int id,
+    String? reason,
+  ) async {
     final url = Uri.parse('${ApiService.apiPrefix}/appointments/$id/cancel/');
     print('Calling PATCH $url');
 
@@ -189,7 +210,9 @@ class AppointmentService {
     if (response.headers['content-type']?.contains('text/html') == true ||
         response.body.trim().startsWith('<!DOCTYPE') ||
         response.body.trim().startsWith('<html')) {
-      throw Exception('Erreur Backend: Réponse HTML reçue au lieu de JSON. URL: $url');
+      throw Exception(
+        'Erreur Backend: Réponse HTML reçue au lieu de JSON. URL: $url',
+      );
     }
 
     if (response.statusCode == 200) {
@@ -201,10 +224,11 @@ class AppointmentService {
       } catch (_) {
         error = response.body;
       }
-      throw Exception(error is Map ? (error['error'] ?? 'Erreur inconnue') : error.toString());
+      throw Exception(
+        error is Map ? (error['error'] ?? 'Erreur inconnue') : error.toString(),
+      );
     }
   }
-
 
   Future<Appointment> updateStatus(String token, int id, String status) async {
     // Deprecated generic update
@@ -216,11 +240,9 @@ class AppointmentService {
         'Content-Type': 'application/json',
         'Authorization': 'Token $token',
       },
-      body: json.encode({
-        'status': status,
-      }),
+      body: json.encode({'status': status}),
     );
-    
+
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');
 
@@ -239,9 +261,7 @@ class AppointmentService {
         'Content-Type': 'application/json',
         'Authorization': 'Token $token',
       },
-      body: json.encode({
-        'date': newDate.toIso8601String(),
-      }),
+      body: json.encode({'date': newDate.toIso8601String()}),
     );
 
     if (response.statusCode == 200) {

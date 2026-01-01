@@ -85,4 +85,26 @@ class AppointmentViewModel with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> cancelAppointment(String token, int id) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _appointmentService.cancelAppointment(
+        token,
+        id,
+        "Annulé par le patient",
+      );
+      await fetchAppointments(token);
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

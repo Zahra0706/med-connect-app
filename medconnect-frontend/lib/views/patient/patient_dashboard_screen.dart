@@ -437,17 +437,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
             context,
             MaterialPageRoute(builder: (_) => const DocumentsScreen()),
           ),
-        ),
-        _buildActionCard(
-          context,
-          "Historique",
-          Icons.history,
-          Colors.orange,
-          () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const MedicalRecordScreen()),
-          ),
-        ),
+        )
       ],
     );
   }

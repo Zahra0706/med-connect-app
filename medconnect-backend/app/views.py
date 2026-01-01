@@ -346,9 +346,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_patient():
-            return Appointment.objects.filter(patient__user=user)
+            return Appointment.objects.filter(patient__user=user).order_by('date')
         elif user.is_doctor():
-            return Appointment.objects.filter(doctor__user=user)
+            return Appointment.objects.filter(doctor__user=user).order_by('date')
         return Appointment.objects.none()
 
     def perform_create(self, serializer):
@@ -422,18 +422,45 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appointment = self.get_object()
         user = request.user
 
-        if not user.is_doctor() or appointment.doctor.user != user:
-            return Response({"error": "Action non autorisée"}, status=status.HTTP_403_FORBIDDEN)
+        if not user.is_doctor() and not user.is_patient():
+             return Response({"error": "Action non autorisée"}, status=status.HTTP_403_FORBIDDEN)
+        
+        if user.is_patient() and appointment.patient.user != user:
+            return Response({"error": "Ce n'est pas votre rendez-vous"}, status=status.HTTP_403_FORBIDDEN)
+        if user.is_doctor() and appointment.doctor.user != user:
+            return Response({"error": "Ce n'est pas votre rendez-vous"}, status=status.HTTP_403_FORBIDDEN)
 
-        if appointment.status != "CONFIRMED":
+        if appointment.status != "PENDING" and appointment.status != "CONFIRMED":
             return Response({"error": f"RDV pas annulable, statut = {appointment.status}"},
                             status=status.HTTP_400_BAD_REQUEST)
+
+        # 24h Rule for patients
+        if user.is_patient():
+             from datetime import timedelta
+             if appointment.date < timezone.now() + timedelta(hours=24):
+                 return Response({"error": "Impossible d'annuler moins de 24h avant le rendez-vous."}, 
+                                 status=status.HTTP_400_BAD_REQUEST)
+        if user.is_doctor() and appointment.doctor.user != user:
+            return Response({"error": "Ce n'est pas votre rendez-vous"}, status=status.HTTP_403_FORBIDDEN)
+
+        if appointment.status != "PENDING" and appointment.status != "CONFIRMED":
+            return Response({"error": f"RDV pas annulable, statut = {appointment.status}"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # 24h Rule for patients
+        if user.is_patient():
+             if appointment.date < timezone.now() + timedelta(hours=24):
+                 return Response({"error": "Impossible d'annuler moins de 24h avant le rendez-vous."}, 
+                                 status=status.HTTP_400_BAD_REQUEST)
 
         reason = request.data.get("reason", "")
 
         appointment.status = "CANCELLED"
-        if reason and hasattr(appointment, "notes_doctor"):
-            appointment.notes_doctor = reason
+        if reason and hasattr(appointment, "notes_doctor"): # Doctor notes for doctor, maybe logic differs for patient reason
+            # If patient cancels, maybe save reason elsewhere? 
+            # For now, let's just save status.
+            pass 
+            
         appointment.save()
 
         return Response(AppointmentSerializer(appointment).data)
