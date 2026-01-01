@@ -4,6 +4,7 @@ import '../../../view_models/patient_auth_view_model.dart';
 import '../../../services/doctor_service.dart';
 import '../../../view_models/patient/appointment_view_model.dart';
 import '../../../models/doctor.dart';
+import 'doctor_details_screen.dart';
 
 class BookAppointmentScreen extends StatefulWidget {
   const BookAppointmentScreen({Key? key}) : super(key: key);
@@ -21,6 +22,8 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   DateTime? _selectedDate;
   String? _selectedTime;
   final TextEditingController _reasonController = TextEditingController();
+  final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _specialtyController = TextEditingController();
 
   // Services
   final DoctorService _doctorService = DoctorService();
@@ -44,6 +47,8 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   @override
   void dispose() {
     _reasonController.dispose();
+    _cityController.dispose();
+    _specialtyController.dispose();
     super.dispose();
   }
 
@@ -56,7 +61,11 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       );
       final token = authViewModel.authResponse?.token;
       if (token != null) {
-        final doctors = await _doctorService.getDoctors(token);
+        final doctors = await _doctorService.getDoctors(
+          token,
+          city: _cityController.text.trim(),
+          specialty: _specialtyController.text.trim(),
+        );
         setState(() {
           _doctors = doctors;
         });
@@ -164,61 +173,140 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   }
 
   Widget _buildDoctorSelectionStep() {
-    if (_isLoadingDoctors) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_doctors.isEmpty) {
-      return const Center(child: Text("Aucun médecin disponible."));
-    }
     return Column(
       children: [
-        const Text(
-          "Sélectionnez un médecin dans la liste ci-dessous :",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _doctors.length,
-          itemBuilder: (context, index) {
-            final doc = _doctors[index];
-            final isSelected = _selectedDoctorId == doc.id;
-            return Card(
-              color: isSelected
-                  ? const Color(0xFF567991).withOpacity(0.1)
-                  : Colors.white,
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: const Color(0xFF567991),
-                  child: Text(
-                    doc.firstName.isNotEmpty ? doc.firstName[0] : 'D',
-                    style: const TextStyle(color: Colors.white),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _cityController,
+                  decoration: const InputDecoration(
+                    labelText: "Ville",
+                    prefixIcon: Icon(Icons.location_city),
+                    border: OutlineInputBorder(),
                   ),
                 ),
-                title: Text(doc.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(doc.speciality, style: const TextStyle(color: Color(0xFF567991))),
-                    if (doc.bio != null && doc.bio!.isNotEmpty)
-                      Text(doc.bio!, maxLines: 2, overflow: TextOverflow.ellipsis),
-                    Text("Tarif: ${doc.consultationFee.toStringAsFixed(0)} DH", style: const TextStyle(fontWeight: FontWeight.bold)),
-                  ],
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _specialtyController,
+                  decoration: const InputDecoration(
+                    labelText: "Spécialité",
+                    prefixIcon: Icon(Icons.medical_services),
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-                trailing: isSelected
-                    ? const Icon(Icons.check_circle, color: Color(0xFF567991))
-                    : null,
-                onTap: () {
-                  setState(() {
-                    _selectedDoctorId = doc.id;
-                    _selectedDoctor = doc;
-                  });
-                },
-              ),
-            );
-          },
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _fetchDoctors,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF567991),
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text("Rechercher"),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
+        const SizedBox(height: 10),
+        if (_isLoadingDoctors)
+          const Center(child: CircularProgressIndicator())
+        else if (_doctors.isEmpty)
+          const Center(
+            child: Text(
+              "Aucun médecin trouvé.",
+              style: TextStyle(fontStyle: FontStyle.italic),
+            ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _doctors.length,
+            itemBuilder: (context, index) {
+              final doc = _doctors[index];
+              final isSelected = _selectedDoctorId == doc.id;
+              return Card(
+                color: isSelected
+                    ? const Color(0xFF567991).withOpacity(0.1)
+                    : Colors.white,
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: const Color(0xFF567991),
+                    child: Text(
+                      doc.firstName.isNotEmpty ? doc.firstName[0] : 'D',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  title: Text(
+                    doc.fullName,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        doc.speciality,
+                        style: const TextStyle(color: Color(0xFF567991)),
+                      ),
+                      if (doc.bio != null && doc.bio!.isNotEmpty)
+                        Text(
+                          doc.bio!,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      Text(
+                        "Tarif: ${doc.consultationFee.toStringAsFixed(0)} DH",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.info_outline,
+                          color: Color(0xFF567991),
+                        ),
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  DoctorDetailsScreen(doctor: doc),
+                            ),
+                          );
+                          if (result == true) {
+                            setState(() {
+                              _selectedDoctorId = doc.id;
+                              _selectedDoctor = doc;
+                            });
+                          }
+                        },
+                      ),
+                      if (isSelected)
+                        const Icon(
+                          Icons.check_circle,
+                          color: Color(0xFF567991),
+                        ),
+                    ],
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _selectedDoctorId = doc.id;
+                      _selectedDoctor = doc;
+                    });
+                  },
+                ),
+              );
+            },
+          ),
       ],
     );
   }
@@ -379,23 +467,23 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   Future<void> _confirmAppointment() async {
     // Vérification plus robuste
     if (_selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Date non sélectionnée")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Date non sélectionnée")));
       return;
     }
-    
+
     if (_selectedTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Heure non sélectionnée")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Heure non sélectionnée")));
       return;
     }
-    
+
     if (_selectedDoctorId == null || _selectedDoctor == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Médecin non sélectionné")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Médecin non sélectionné")));
       return;
     }
 
@@ -405,14 +493,14 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       if (parts.length != 2) {
         throw FormatException("Format d'heure invalide");
       }
-      
+
       final hour = int.tryParse(parts[0]);
       final minute = int.tryParse(parts[1]);
-      
+
       if (hour == null || minute == null) {
         throw FormatException("Heure invalide");
       }
-      
+
       final dt = DateTime(
         _selectedDate!.year,
         _selectedDate!.month,
@@ -421,16 +509,21 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         minute,
       );
 
-      final viewModel = Provider.of<AppointmentViewModel>(context, listen: false);
+      final viewModel = Provider.of<AppointmentViewModel>(
+        context,
+        listen: false,
+      );
       final authViewModel = Provider.of<PatientAuthViewModel>(
         context,
         listen: false,
       );
-      
+
       final token = authViewModel.authResponse?.token;
       if (token == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Session expirée, veuillez vous reconnecter")),
+          const SnackBar(
+            content: Text("Session expirée, veuillez vous reconnecter"),
+          ),
         );
         return;
       }
@@ -439,25 +532,26 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         token,
         _selectedDoctorId!, // Assurez-vous que c'est un int
         dt,
-        _reasonController.text.isNotEmpty ? _reasonController.text : "Consultation générale",
+        _reasonController.text.isNotEmpty
+            ? _reasonController.text
+            : "Consultation générale",
       );
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Rendez-vous confirmé !")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Rendez-vous confirmé !")));
         Navigator.pop(context);
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Erreur: ${viewModel.error}")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Erreur: ${viewModel.error}")));
       }
-      
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Erreur: ${e.toString()}")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Erreur: ${e.toString()}")));
       }
     }
   }

@@ -189,6 +189,18 @@ class DoctorViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorProfileSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        queryset = DoctorProfile.objects.all()
+        city = self.request.query_params.get('city')
+        specialty = self.request.query_params.get('specialty')
+
+        if city:
+            queryset = queryset.filter(city__icontains=city)
+        if specialty:
+            queryset = queryset.filter(speciality__name__icontains=specialty)
+            
+        return queryset
+
     @action(detail=True, methods=['get'])
     def availability(self, request, pk=None):
         doctor = self.get_object()

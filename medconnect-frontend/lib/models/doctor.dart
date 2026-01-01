@@ -6,6 +6,9 @@ class Doctor {
   final String speciality;
   final double consultationFee;
   final String? bio;
+  final String? city;
+  final String? location;
+  final int yearsOfExperience;
 
   Doctor({
     required this.id,
@@ -15,6 +18,9 @@ class Doctor {
     required this.speciality,
     required this.consultationFee,
     this.bio,
+    this.city,
+    this.location,
+    this.yearsOfExperience = 0,
   });
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
@@ -28,6 +34,9 @@ class Doctor {
           ? double.tryParse(json['consultation_fee'].toString()) ?? 0.0
           : 0.0,
       bio: json['bio'],
+      city: json['city'],
+      location: json['location'],
+      yearsOfExperience: json['years_of_experience'] ?? 0,
     );
   }
 

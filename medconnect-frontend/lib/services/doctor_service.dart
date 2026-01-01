@@ -37,8 +37,23 @@ class DoctorService {
   }
 
   // Placeholder for fetching doctor list if needed
-  Future<List<Doctor>> getDoctors(String token) async {
-    final url = Uri.parse('${ApiService.apiPrefix}/doctors/');
+  Future<List<Doctor>> getDoctors(
+    String token, {
+    String? city,
+    String? specialty,
+  }) async {
+    // Build query params
+    String query = '';
+    List<String> params = [];
+    if (city != null && city.isNotEmpty) params.add('city=$city');
+    if (specialty != null && specialty.isNotEmpty)
+      params.add('specialty=$specialty');
+
+    if (params.isNotEmpty) {
+      query = '?${params.join('&')}';
+    }
+
+    final url = Uri.parse('${ApiService.apiPrefix}/doctors/$query');
     final response = await http.get(
       url,
       headers: {
