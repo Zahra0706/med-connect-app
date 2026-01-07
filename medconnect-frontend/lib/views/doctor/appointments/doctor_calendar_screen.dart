@@ -22,7 +22,7 @@ class _DoctorCalendarScreenState extends State<DoctorCalendarScreen> {
     super.initState();
     _selectedDay = _focusedDay;
 
-    /// ✅ Initialise le format FR
+    ///  Initialise le format FR
     initializeDateFormatting('fr_FR', null).then((_) {
       if (mounted) {
         setState(() {
@@ -32,7 +32,7 @@ class _DoctorCalendarScreenState extends State<DoctorCalendarScreen> {
     });
   }
 
-  /// ✅ Récupérer les RDV du jour
+  ///  Récupérer les RDV du jour
   List<Appointment> _getAppointmentsForDay(DateTime day) {
     final viewModel =
     Provider.of<DoctorAppointmentViewModel>(context, listen: false);
@@ -62,7 +62,7 @@ class _DoctorCalendarScreenState extends State<DoctorCalendarScreen> {
           _buildHeader(),
           _buildDaysOfWeek(),
 
-          /// ✅ IMPORTANT: Calendar dans Expanded pour éviter overflow
+          /// IMPORTANT: Calendar dans Expanded pour éviter overflow
           Expanded(
             flex: 2,
             child: _buildCalendarGrid(),
@@ -70,7 +70,7 @@ class _DoctorCalendarScreenState extends State<DoctorCalendarScreen> {
 
           const Divider(),
 
-          /// ✅ IMPORTANT: Liste des RDV aussi dans Expanded
+          /// IMPORTANT: Liste des RDV aussi dans Expanded
           Expanded(
             flex: 3,
             child: _buildAppointmentList(),

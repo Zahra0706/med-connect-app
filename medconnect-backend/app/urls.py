@@ -19,22 +19,22 @@ router.register(r'conversations', ConversationViewSet, basename='conversation')
 router.register(r'messages', MessageViewSet, basename='message')
 
 urlpatterns = [
-    # ✅ ROUTES API UNIQUEMENT
+    # ROUTES API UNIQUEMENT
     path('api/', include(router.urls)),
 
-    # ✅ Routes APIView patient
+    # Routes APIView patient
     path('api/patient/dashboard/', PatientDashboardView.as_view(), name='patient-dashboard'),
     path('api/patient/profile/', PatientProfileView.as_view(), name='patient-profile'),
     path('api/patient/medical-record/', PatientMedicalRecordView.as_view(), name='patient-medical-record'),
 
-    # ✅ Route Dashboard Médecin
+    # Route Dashboard Médecin
     path('api/doctor/dashboard/', DoctorDashboardAPIView.as_view(), name='doctor-dashboard'),
 
     # Auth DRF Browsable API
     path('api-auth/', include('rest_framework.urls')),
 ]
 
-# ✅ Routes manuelles confirm/refuse/cancel (fix 404)
+
 appointment_confirm = AppointmentViewSet.as_view({'patch': 'confirm'})
 appointment_refuse = AppointmentViewSet.as_view({'patch': 'refuse'})
 appointment_cancel = AppointmentViewSet.as_view({'patch': 'cancel'})

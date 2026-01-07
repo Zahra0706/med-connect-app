@@ -50,8 +50,8 @@ class Appointment {
       case 'CANCELLED':
         displayStatus = statusCancelled;
         break;
-      case 'REFUSED': // Correct backend status
-      case 'REJECTED': // Legacy/Safety
+      case 'REFUSED': 
+      case 'REJECTED':
         displayStatus = statusRefused;
         break;
       case 'COMPLETED':

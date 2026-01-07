@@ -452,9 +452,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         reason = request.data.get("reason", "")
 
         appointment.status = "CANCELLED"
-        if reason and hasattr(appointment, "notes_doctor"): # Doctor notes for doctor, maybe logic differs for patient reason
-            # If patient cancels, maybe save reason elsewhere? 
-            # For now, let's just save status.
+        if reason and hasattr(appointment, "notes_doctor"): 
+            
             pass 
             
         appointment.save()
