@@ -2,7 +2,7 @@
 
 MedConnect est une solution complète de gestion médicale conçue pour simplifier et optimiser la relation entre les patients et les professionnels de santé. Cette application offre une plateforme fluide pour la prise de rendez-vous, la gestion des dossiers médicaux et la communication sécurisée.
 
-## 🚀 Fonctionnalités Principales
+## Fonctionnalités Principales
 
 ### Pour les Patients
 *   **Prise de Rendez-vous** : Recherchez des médecins et réservez des consultations en quelques clics.
@@ -17,14 +17,14 @@ MedConnect est une solution complète de gestion médicale conçue pour simplifi
 *   **Confirmation de Rendez-vous** : Acceptez, refusez ou annulez les demandes de rendez-vous reçues.
 *   **Tableau de Bord Pro** : Une vue d'ensemble de votre activité quotidienne.
 
-## 🛠 Technologies Utilisées
+##  Technologies Utilisées
 
 Le projet est divisé en deux parties principales :
 
 *   **Backend** : Développé avec **Django** et **Django REST Framework (DRF)**. Il gère l'authentification, la logique métier, la base de données et expose une API REST pour le frontend.
 *   **Frontend** : Application mobile développée avec **Flutter (Dart)**, offrant une interface utilisateur native, réactive et performante sur Android et iOS.
 
-## 📦 Guide d'Installation
+## Guide d'Installation
 
 Suivez ces étapes pour installer et lancer le projet localement.
 
