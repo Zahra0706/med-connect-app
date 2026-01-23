@@ -8,7 +8,6 @@ MedConnect est une solution complète de gestion médicale conçue pour simplifi
 *   **Prise de Rendez-vous** : Recherchez des médecins et réservez des consultations en quelques clics.
 *   **Tableau de Bord** : Visualisez vos rendez-vous à venir, passés et annulés.
 *   **Dossier Médical** : Accédez à votre historique médical et à vos documents (ordonnances, résultats d'analyses) en toute sécurité.
-*   **Messagerie** : Échangez directement avec vos médecins via une messagerie intégrée.
 *   **Gestion de Profil** : Mettez à jour vos informations personnelles facilement.
 
 ### Pour les Médecins
