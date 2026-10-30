@@ -71,7 +71,7 @@ flutter pub get
 flutter run
 ```
 
-## 🔐 Authentification
+## Authentification
 
 L'application gère deux types d'utilisateurs distincts :
 *   **Patients**
